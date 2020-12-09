@@ -35,6 +35,9 @@ public class TakeAway implements TakeAwayBill {
             if(totGelatiBudini > 50) {
                 total -= total/10;
             }
+            if(total < 10) {
+                total += 0.5;
+            }
             return total;
         } else {
             throw new TakeAwayBillException("Il numero di prodotti ordinati non puo' essere maggiore di 30");

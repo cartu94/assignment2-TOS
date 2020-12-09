@@ -29,6 +29,7 @@ public class TakeAwayTest {
 	private List<MenuItem> lBudiniGelati50e;
 	private List<MenuItem> lBudiniGelati50e6Gelati;
     private List<MenuItem> lOver30Items;
+    private List<MenuItem> lTotMinore10;
 	private User user;
 	private LocalTime time;
 	private TakeAway order;
@@ -61,11 +62,13 @@ public class TakeAwayTest {
 		for(int i = 0; i < 31; i++) {
 			lOver30Items.add(new MenuItem(MenuItem.itemType.Gelato, "Gelato"+i, 4));
 		}
-		
+
+        lTotMinore10 = new ArrayList<MenuItem>();
+        lTotMinore10.add(new MenuItem(MenuItem.itemType.Budino, "Biancaneve", 5));
+
 		user = new User("Mario", "Rossi", 30);
 		time = LocalTime.of(18, 0);
 		order = new TakeAway();
-		
 	}
 	
 	@Test
@@ -100,5 +103,11 @@ public class TakeAwayTest {
         exceptionRule.expect(TakeAwayBillException.class);
         exceptionRule.expectMessage("Il numero di prodotti ordinati non puo' essere maggiore di 30");
         order.getOrderPrice(lOver30Items, user, time);
+    }
+    
+    @Test
+    public void testTotaleOrdineInferiore10euro() throws TakeAwayBillException {
+    	double tot = order.getOrderPrice(lTotMinore10, user, time);
+    	assertEquals(5.5, tot, DELTA);
     }
 }
