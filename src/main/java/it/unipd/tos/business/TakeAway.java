@@ -19,22 +19,26 @@ public class TakeAway implements TakeAwayBill {
         int nGelati = 0;
         double totGelatiBudini = 0;
 
-        for(MenuItem item : itemsOrdered) {
-            total += item.getPrice();
-            if(item.getType().equals(MenuItem.itemType.Gelato)) {
-                nGelati++;
-                totGelatiBudini += item.getPrice();
-            } else if(item.getType().equals(MenuItem.itemType.Budino)) {
-                totGelatiBudini += item.getPrice();
+        if(itemsOrdered.size() <= 30) {
+            for(MenuItem item : itemsOrdered) {
+                total += item.getPrice();
+                if(item.getType().equals(MenuItem.itemType.Gelato)) {
+                    nGelati++;
+                    totGelatiBudini += item.getPrice();
+                } else if(item.getType().equals(MenuItem.itemType.Budino)) {
+                    totGelatiBudini += item.getPrice();
+                }
             }
+            if(nGelati > 5) {
+                total -= scontoGelatoMenoCaro(itemsOrdered);
+            }
+            if(totGelatiBudini > 50) {
+                total -= total/10;
+            }
+            return total;
+        } else {
+            throw new TakeAwayBillException("Il numero di prodotti ordinati non puo' essere maggiore di 30");
         }
-        if(nGelati > 5) {
-            total -= scontoGelatoMenoCaro(itemsOrdered);
-        }
-        if(totGelatiBudini > 50) {
-            total -= total/10;
-        }
-        return total;
     }
 
     private double scontoGelatoMenoCaro(List<MenuItem> itemsOrdered) {

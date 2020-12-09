@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.Rule;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -26,6 +28,7 @@ public class TakeAwayTest {
 	private List<MenuItem> l6Gelati;
 	private List<MenuItem> lBudiniGelati50e;
 	private List<MenuItem> lBudiniGelati50e6Gelati;
+    private List<MenuItem> lOver30Items;
 	private User user;
 	private LocalTime time;
 	private TakeAway order;
@@ -54,6 +57,11 @@ public class TakeAwayTest {
 		lBudiniGelati50e6Gelati.add(new MenuItem(MenuItem.itemType.Budino, "Budino Gigante",15));
 		lBudiniGelati50e6Gelati.add(new MenuItem(MenuItem.itemType.Gelato, "3kg Vaniglia",20));
 		
+		lOver30Items = new ArrayList<MenuItem>();
+		for(int i = 0; i < 31; i++) {
+			lOver30Items.add(new MenuItem(MenuItem.itemType.Gelato, "Gelato"+i, 4));
+		}
+		
 		user = new User("Mario", "Rossi", 30);
 		time = LocalTime.of(18, 0);
 		order = new TakeAway();
@@ -62,42 +70,35 @@ public class TakeAwayTest {
 	
 	@Test
 	public void testMenoDi5Gelati() throws TakeAwayBillException {
-		try {
-			double tot = order.getOrderPrice(lSemplice, user, time);
-			assertEquals(11, tot, DELTA);
-		} catch(TakeAwayBillException e) {
-			//
-		}
+		double tot = order.getOrderPrice(lSemplice, user, time);
+		assertEquals(11, tot, DELTA);
 	}
 	
 	@Test
 	public void testPiuDi5Gelati() throws TakeAwayBillException {
-		try {
-			double tot = order.getOrderPrice(l6Gelati, user, time);
-			assertEquals(28, tot, DELTA);
-		} catch(TakeAwayBillException e) {
-			//
-		}
+		double tot = order.getOrderPrice(l6Gelati, user, time);
+		assertEquals(28, tot, DELTA);
 	}
 	
 	@Test
 	public void testBudiniGelatiMag50euroMenoDi5Gelati() throws TakeAwayBillException {
-		try {
-			double tot = order.getOrderPrice(lBudiniGelati50e, user, time);
-			assertEquals(49.5, tot, DELTA);
-		} catch(TakeAwayBillException e) {
-			//
-		}
+		double tot = order.getOrderPrice(lBudiniGelati50e, user, time);
+		assertEquals(49.5, tot, DELTA);
 	}
 
 	@Test
 	public void testBudiniGelatiMag50euroPiuDi5Gelati() throws TakeAwayBillException {
-		try {
-			double tot = order.getOrderPrice(lBudiniGelati50e6Gelati, user, time);
-			assertEquals(74.7, tot, DELTA);
-		} catch(TakeAwayBillException e) {
-			//
-		}
+	    double tot = order.getOrderPrice(lBudiniGelati50e6Gelati, user, time);
+        assertEquals(74.7, tot, DELTA);
 	}
-	
+    
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
+
+    @Test
+    public void whenExceptionThrown_thenRuleIsApplied() throws TakeAwayBillException {
+        exceptionRule.expect(TakeAwayBillException.class);
+        exceptionRule.expectMessage("Il numero di prodotti ordinati non puo' essere maggiore di 30");
+        order.getOrderPrice(lOver30Items, user, time);
+    }
 }
