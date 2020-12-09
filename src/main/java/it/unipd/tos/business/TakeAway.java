@@ -17,18 +17,24 @@ public class TakeAway implements TakeAwayBill {
     public double getOrderPrice(List<MenuItem> itemsOrdered, User user, LocalTime time) throws TakeAwayBillException {
         float total = 0;
         int nGelati = 0;
+        double totGelatiBudini = 0;
 
         for(MenuItem item : itemsOrdered) {
             total += item.getPrice();
             if(item.getType().equals(MenuItem.itemType.Gelato)) {
                 nGelati++;
+                totGelatiBudini += item.getPrice();
+            } else if(item.getType().equals(MenuItem.itemType.Budino)) {
+                totGelatiBudini += item.getPrice();
             }
         }
         if(nGelati > 5) {
-            return total - scontoGelatoMenoCaro(itemsOrdered);
-        } else {
-            return total;
+            total -= scontoGelatoMenoCaro(itemsOrdered);
         }
+        if(totGelatiBudini > 50) {
+            total -= total/10;
+        }
+        return total;
     }
 
     private double scontoGelatoMenoCaro(List<MenuItem> itemsOrdered) {
@@ -42,5 +48,4 @@ public class TakeAway implements TakeAwayBill {
         }
         return sconto/2;
     }
-
 }
