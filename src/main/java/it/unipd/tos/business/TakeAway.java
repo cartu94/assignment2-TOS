@@ -5,13 +5,25 @@
 package it.unipd.tos.business;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import it.unipd.tos.business.exception.TakeAwayBillException;
 import it.unipd.tos.model.MenuItem;
 import it.unipd.tos.model.User;
 
 public class TakeAway implements TakeAwayBill {
+
+    private List<MenuItem> itemsOrdered;
+    private User user;
+    private LocalTime time;
+
+    public TakeAway(List<MenuItem> itemsOrdered, User user, LocalTime time) {
+        this.itemsOrdered = itemsOrdered;
+        this.user = user;
+        this.time = time;
+    }
 
     @Override
     public double getOrderPrice(List<MenuItem> itemsOrdered, User user, LocalTime time) throws TakeAwayBillException {
@@ -54,5 +66,51 @@ public class TakeAway implements TakeAwayBill {
             }
         }
         return sconto/2;
+    }
+
+    public List<MenuItem> getItemsOrdered(){
+        return itemsOrdered;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public LocalTime getTime() {
+        return time;
+    }
+
+    public List<Double> regala10OrdiniAMinoriInFasciaOraria1819(List<TakeAway> listaOrdini)
+    throws TakeAwayBillException{
+        List<Integer> lElegibili = new ArrayList<Integer>();
+        List<Double> lTotOrdini = new ArrayList<Double>();
+        for(int i = 0; i < listaOrdini.size(); i++) {
+            if(listaOrdini.get(i).getUser().getAge() < 18) {
+                if(listaOrdini.get(i).getTime().compareTo(LocalTime.of(18, 0)) >= 0 
+                && listaOrdini.get(i).getTime().compareTo(LocalTime.of(19, 0)) <= 0) {
+                    boolean singolaCopiaUtente = true;
+                    for(int elegibile : lElegibili) {
+                        if(listaOrdini.get(i).getUser().equals(listaOrdini.get(elegibile).getUser())) {
+                             singolaCopiaUtente = false;
+                        }
+                    }
+                    if(singolaCopiaUtente) {
+                        lElegibili.add(i);
+                    }
+                }
+            }
+            lTotOrdini.add(listaOrdini.get(i).getOrderPrice(listaOrdini.get(i).getItemsOrdered(), 
+                listaOrdini.get(i).getUser(), listaOrdini.get(i).getTime()));
+        }
+        Random rand = new Random();
+        for(int i = 0; i < lElegibili.size() && i < 10; i++) {
+            int randomIndex = lElegibili.get(rand.nextInt(lElegibili.size()));
+            if(lTotOrdini.get(randomIndex) > 0) {
+                lTotOrdini.set(randomIndex, 0.0);
+            } else {
+                i--;
+            }
+        }
+        return lTotOrdini;
     }
 }

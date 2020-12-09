@@ -33,6 +33,10 @@ public class TakeAwayTest {
 	private User user;
 	private LocalTime time;
 	private TakeAway order;
+	private List<TakeAway> lOrdiniAlmeno10Elegibili;
+	private List<TakeAway> lOrdiniMenoDi10Elegibili;
+	private List<TakeAway> lOrdiniZeroElegibiliOrario;
+	private List<TakeAway> lOrdini1ElegibileMultiploUtente;
 	
 	@Before
 	public void setUp() {
@@ -40,7 +44,11 @@ public class TakeAwayTest {
 		lSemplice.add(new MenuItem(MenuItem.itemType.Gelato, "Vaniglia", 3));
 		lSemplice.add(new MenuItem(MenuItem.itemType.Budino, "Pinguino", 5.5));
 		lSemplice.add(new MenuItem(MenuItem.itemType.Bevanda, "Aranciata", 2.5));
-		
+
+        user = new User("Mario", "Rossi", 30);
+        time = LocalTime.of(18, 0);
+        order = new TakeAway(lSemplice, user, time);
+
 		l6Gelati = new ArrayList<MenuItem>(lSemplice);
 		l6Gelati.add(new MenuItem(MenuItem.itemType.Gelato, "Cioccolato", 3));
 		l6Gelati.add(new MenuItem(MenuItem.itemType.Gelato, "Tre Gusti", 5));
@@ -66,9 +74,30 @@ public class TakeAwayTest {
         lTotMinore10 = new ArrayList<MenuItem>();
         lTotMinore10.add(new MenuItem(MenuItem.itemType.Budino, "Biancaneve", 5));
 
-		user = new User("Mario", "Rossi", 30);
-		time = LocalTime.of(18, 0);
-		order = new TakeAway();
+        lOrdiniAlmeno10Elegibili = new ArrayList<TakeAway>();
+        for(int i = 0; i < 12; i++) {
+        	lOrdiniAlmeno10Elegibili.add(new TakeAway(lSemplice, new User("nMinore"+i,"sMinore"+i, 16),
+                    LocalTime.of(18, 30)));
+        }
+        lOrdiniAlmeno10Elegibili.add(new TakeAway(lSemplice, user, time));
+        
+        lOrdiniMenoDi10Elegibili = new ArrayList<TakeAway>();
+        lOrdiniMenoDi10Elegibili.add(new TakeAway(lSemplice, user, time));
+        lOrdiniMenoDi10Elegibili.add(new TakeAway(lSemplice, new User("Marcellino","Panevino", 14),
+                LocalTime.of(18, 30)));
+        
+        lOrdiniZeroElegibiliOrario = new ArrayList<TakeAway>();
+        lOrdiniZeroElegibiliOrario.add(new TakeAway(lSemplice, new User("Marcellino","Panevino", 14),
+                LocalTime.of(20, 30)));
+        lOrdiniZeroElegibiliOrario.add(new TakeAway(lSemplice, new User("Giuseppino","Panevino", 14),
+                LocalTime.of(14, 30)));
+        
+        lOrdini1ElegibileMultiploUtente = new ArrayList<TakeAway>();
+        lOrdini1ElegibileMultiploUtente.add(new TakeAway(lSemplice, new User("Marcellino","Panevino", 14),
+                LocalTime.of(18, 30)));
+        lOrdini1ElegibileMultiploUtente.add(new TakeAway(lSemplice, new User("Marcellino","Panevino", 14),
+                LocalTime.of(18, 30)));
+        
 	}
 	
 	@Test
@@ -109,5 +138,68 @@ public class TakeAwayTest {
     public void testTotaleOrdineInferiore10euro() throws TakeAwayBillException {
     	double tot = order.getOrderPrice(lTotMinore10, user, time);
     	assertEquals(5.5, tot, DELTA);
+    }
+    
+    @Test
+    public void getItemsOrderedTest() {
+    	assertEquals(lSemplice, order.getItemsOrdered());
+    }
+    
+    @Test
+    public void getUserTest() {
+    	assertEquals(user, order.getUser());
+    }
+    
+    @Test
+    public void getTimeTest() {
+    	assertEquals(time, order.getTime());
+    }
+    
+    @Test
+    public void testRegalaOrdiniAlmeno10Elegibili() throws TakeAwayBillException {
+    	List<Double> totOrdini = order.regala10OrdiniAMinoriInFasciaOraria1819(lOrdiniAlmeno10Elegibili);
+    	int nOrdiniGratis = 0;
+    	for(double tot : totOrdini) {
+    		if(Double.compare(tot, 0.0) == 0) {
+    			nOrdiniGratis++;
+    		}
+    	}
+    	assertEquals(10, nOrdiniGratis);
+    }
+    
+    @Test
+    public void testRegalaOrdiniMenoDi10Elegibili() throws TakeAwayBillException {
+    	List<Double> totOrdini = order.regala10OrdiniAMinoriInFasciaOraria1819(lOrdiniMenoDi10Elegibili);
+    	int nOrdiniGratis = 0;
+    	for(double tot : totOrdini) {
+    		if(Double.compare(tot, 0.0) == 0) {
+    			nOrdiniGratis++;
+    		}
+    	}
+    	assertEquals(1, nOrdiniGratis);
+    }
+    
+    @Test
+    public void testRegalaOrdini0ElegibiliCausaOrario() throws TakeAwayBillException {
+    	List<Double> totOrdini = order.regala10OrdiniAMinoriInFasciaOraria1819(lOrdiniZeroElegibiliOrario);
+    	int nOrdiniGratis = 0;
+    	for(double tot : totOrdini) {
+    		if(Double.compare(tot, 0.0) == 0) {
+    			nOrdiniGratis++;
+    		}
+    	}
+    	assertEquals(0, nOrdiniGratis);
+    }
+    
+    @Test
+    public void testRegalaOrdini1ElegibileMultiploUtente() throws TakeAwayBillException {
+    	List<Double> totOrdini = order.regala10OrdiniAMinoriInFasciaOraria1819(lOrdini1ElegibileMultiploUtente);
+    	int nOrdiniGratis = 0;
+    	for(double tot : totOrdini) {
+    		if(Double.compare(tot, 0.0) == 0) {
+    			nOrdiniGratis++;
+    		}
+    	}
+    	assertEquals(1, nOrdiniGratis);
     }
 }

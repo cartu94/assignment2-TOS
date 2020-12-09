@@ -27,4 +27,18 @@ public class User {
     public int getAge() {
         return age;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        // If the object is compared with itself then return true   
+        if (o == this) { 
+            return true; 
+        } 
+            
+        // typecast o to Complex so that we can compare data members  
+        User c = (User) o; 
+          
+        // Compare the data members and return accordingly  
+        return this.name.equals(c.getName()) && this.surname.equals(c.getSurname()) && this.age == c.getAge(); 
+    }
 }
